@@ -1,0 +1,52 @@
+services:
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: auth_service
+    ports:
+      - ${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}
+    networks:
+      - songmore-network
+    env_file:
+      - .env
+    depends_on:
+      - auth-db
+
+  auth-db:
+    image: mongo:8
+    container_name: auth_db
+    ports:
+      - 27018:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${AUTH_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${AUTH_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${AUTH_DB_DATABASE}
+    volumes:
+      - auth-db-data:/data/db
+    networks:
+      - songmore-network
+    env_file:
+      - .env
+
+  songmore-db:
+    image: mongo:8
+    container_name: songmore_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${SONGMORE_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${SONGMORE_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${SONGMORE_DB_DATABASE}
+    ports:
+      - 27019:27017
+    networks:
+      - songmore-network
+    volumes:
+      - songmore-db-data:/data/db
+
+volumes:
+  auth-db-data:
+  songmore-db-data:
+
+networks:
+  songmore-network:
+    driver: bridge
